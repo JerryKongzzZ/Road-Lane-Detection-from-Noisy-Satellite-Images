@@ -110,31 +110,35 @@ class SimpleSegmentationModel(nn.Module):
 
     def forward(self, x):
         x = self.conv2(self.conv2(self.conv1(x)))
-        #print(x.shape)
         x = self.maxpool(x)
-        #print(x.shape)
         x = self.conv4(self.conv4(self.conv3(x)))
-        #print(x.shape)
         x = self.maxpool(x)
-        #print(x.shape)
         x = self.conv6(self.conv6(self.conv5(x)))
-        #print(x.shape)
         x = self.maxpool(x)
-        #print(x.shape)
-        x = torch.tanh(x)
+        x = torch.tanh(x) # Add a non-linearity to the model
         x = self.sigmoid(x)
         x = self.conv8(self.conv8(self.conv7(x)))
-        #print(x.shape)
         x = self.upsample(x)
-        #print(x.shape)
         x = self.conv6(self.conv6(self.conv9(x)))
         x = self.upsample(x)
         x = self.conv4(self.conv4(self.conv10(x)))
         x = self.upsample(x)
         x = self.conv11(x)
-        #print(x.shape)
         return x
 
+# Define transformations for images and masks
+transform = {
+    'image': transforms.Compose([
+        transforms.Resize((256,256)),  # Resize images
+        transforms.ToTensor()
+    ]),
+    'mask': transforms.Compose([
+        transforms.Resize((256,256)),  # Resize masks to match images
+        transforms.ToTensor()
+    ])
+}
+
+# Data augmentation and normalization for training
 def calculate_accuracy(pred_mask, true_mask): # Accuracy
     pred_mask = pred_mask.flatten() # Flatten the mask
     true_mask = true_mask.flatten()
@@ -255,18 +259,6 @@ def Validation_Model(model):
         val_path = os.path.join(val_dir, image_name)
         val_image.save(val_path)
     return total_loss/total_num
-
-# Define transformations for images and masks
-transform = {
-    'image': transforms.Compose([
-        transforms.Resize((256,256)),  # Resize images
-        transforms.ToTensor()
-    ]),
-    'mask': transforms.Compose([
-        transforms.Resize((256,256)),  # Resize masks to match images
-        transforms.ToTensor()
-    ])
-}
 
 criterion1 = nn.BCELoss() # Binary Cross Entropy Loss
 criterion2 = nn.BCEWithLogitsLoss() # Binary Cross Entropy with Logits Loss
