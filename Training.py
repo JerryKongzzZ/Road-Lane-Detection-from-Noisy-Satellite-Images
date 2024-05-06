@@ -169,19 +169,6 @@ def calculate_ber(mask, image): # Balanced Error Rate (BER)
     ber = 1 - 0.5 * (TPR + TNR)
     return ber
 
-def calculate_bce(mask, image): # Binary Cross Entropy (BCE)
-    mask = mask.flatten()
-    image = image.flatten()
-    bce = F.binary_cross_entropy(mask, image)
-    return bce
-
-# Function to save the model
-def save_checkpoint(model, epoch, checkpoint_dir='checkpoints'):
-    os.makedirs(checkpoint_dir, exist_ok=True)
-    checkpoint_path = os.path.join(checkpoint_dir, f'checkpoint_{epoch}.pth')
-    torch.save(model.state_dict(), checkpoint_path)
-    return checkpoint_path
-
 def test_model(model_path):
     test_data = TestDataset(test_dir)
     test_loader = DataLoader(test_data, batch_size=4, shuffle=False)
@@ -266,6 +253,12 @@ criterion3 = nn.CrossEntropyLoss() # Cross Entropy Loss
 criterion4 = nn.MSELoss() # Mean Squared Error Loss
 criterion5 = FocalLoss() # Focal Loss
 
+# Function to save the model
+def save_checkpoint(model, epoch, checkpoint_dir='checkpoints'):
+    os.makedirs(checkpoint_dir, exist_ok=True)
+    checkpoint_path = os.path.join(checkpoint_dir, f'checkpoint_{epoch}.pth')
+    torch.save(model.state_dict(), checkpoint_path)
+    return checkpoint_path
 
 def main():
     if(not os.path.exists(train_img_folder)):
