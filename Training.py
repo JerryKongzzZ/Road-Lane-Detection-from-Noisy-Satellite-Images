@@ -289,6 +289,7 @@ def main():
         total_mae = 0
         total_loss = 0
         total_acc = 0
+        flag = 0
         total_num = len(train_loader)
         # print(len(train_loader))
         if (checkpoint_path != ''):
@@ -330,21 +331,23 @@ def main():
         total_train_loss.append(total_loss/total_num)
         val_loss = Validation_Model(model)
         total_val_loss.append(val_loss)
-        if(len(total_val_loss) >= 5 and total_val_loss[-1] > total_val_loss[-2] and total_val_loss[-2] > total_val_loss[-3] and total_val_loss[-3] > total_val_loss[-4] and total_val_loss[-4] > total_val_loss[-5]):
-            if(len(total_train_loss) >= 5 and total_train_loss[-1] < total_train_loss[-2] and total_train_loss[-2] < total_train_loss[-3] and total_train_loss[-3] < total_train_loss[-4] and total_train_loss[-4] < total_train_loss[-5]):
+        if(len(total_val_loss) > 5 and total_val_loss[-1] > total_val_loss[-2] and total_val_loss[-2] > total_val_loss[-3] and total_val_loss[-3] > total_val_loss[-4] and total_val_loss[-4] > total_val_loss[-5]):
+            if(len(total_train_loss) > 5 and total_train_loss[-1] < total_train_loss[-2] and total_train_loss[-2] < total_train_loss[-3] and total_train_loss[-3] < total_train_loss[-4] and total_train_loss[-4] < total_train_loss[-5]):
                 print('Overfitting happened!')
-                break
-        scheduler.step()
-        if (epoch + 1) % 1 == 0:
-            checkpoint_path = save_checkpoint(model, epoch + 1)
-        arr_acc.append(total_acc/total_num)
-        arr_loss.append(total_loss/total_num)
-        arr_ber.append(total_ber/total_num)
-        arr_mae.append(total_mae/total_num)
-        if(arr_acc.__len__() > 1): 
-            show_image_mask(arr_acc, arr_loss, arr_ber, arr_mae, 'Multiple Line Plots')
-        if(epoch + 1) % 10 == 0:
-            test_model(checkpoint_path)
+                checkpoint_path = f'checkpoint_{epoch - 5}.pth' # Load the model from 5 epochs ago
+                flag = 1
+        if(flag == 0):
+            scheduler.step()
+            if (epoch + 1) % 1 == 0:
+                checkpoint_path = save_checkpoint(model, epoch + 1)
+            arr_acc.append(total_acc/total_num)
+            arr_loss.append(total_loss/total_num)
+            arr_ber.append(total_ber/total_num)
+            arr_mae.append(total_mae/total_num)
+            if(arr_acc.__len__() > 1): 
+                show_image_mask(arr_acc, arr_loss, arr_ber, arr_mae, 'Multiple Line Plots')
+            if(epoch + 1) % 10 == 0:
+                test_model(checkpoint_path)
     print('Task completed!')
 
 if __name__ == '__main__':
