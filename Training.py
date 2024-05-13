@@ -4,7 +4,7 @@ from time import sleep
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+import torch.nn.functional as F1
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms  
@@ -12,21 +12,21 @@ from PIL import Image
 from tqdm import tqdm
 
 CUDA_LAUNCH_BLOCKING=1
-device = torch.device('cuda')
+device = torch.device('cpu')
 
 # Please modify the following paths to the correct paths on your machine!!!
-print('Welcome to the Road Lane Detection from Noisy Satellite Images Program.')
+print('Welcome to the Road Lane Detection from Noisy Satellite Imag1es Program.')
 i = eval(input('Please input the training mode, Debug mode if i = 0, Full mode if i = 1, Half mode if i = 2.'))
 output_dir = 'output'
 val_dir = 'val_output'
-val_img_folder = 'C:/example/pic/good1/images'
-val_gt_folder = 'C:/example/Train/Train/labels'
-train_gt_folder = 'C:/example/Train/Train/labels'
-if(i != 1): test_dir = 'C:/example/Test_studentversion/images_test'
-else: test_dir = 'C:\example\Test_studentversion/images'
-if(i == 1): train_img_folder = 'C:/example/Train/Train/images'
-elif(i == 2): train_img_folder = 'C:/example/Train/Train/images_half'
-else: train_img_folder = 'C:/example/Train/Train/images_test'
+val_img_folder = '/Users/jerrykong/FilesCenter/kzr/1HKPOLYU/Projects/example/pic/good1/images'
+val_gt_folder = '/Users/jerrykong/FilesCenter/kzr/1HKPOLYU/Projects/example/Train/Train/labels'
+train_gt_folder = '/Users/jerrykong/FilesCenter/kzr/1HKPOLYU/Projects/example/Train/Train/labels'
+if(i != 1): test_dir = '/Users/jerrykong/FilesCenter/kzr/1HKPOLYU/Projects/example/Test_studentversion/images_test'
+else: test_dir = '/Users/jerrykong/FilesCenter/kzr/1HKPOLYU/Projects/example/Test_studentversion/images'
+if(i == 1): train_img_folder = '/Users/jerrykong/FilesCenter/kzr/1HKPOLYU/Projects/example/Train/Train/images'
+elif(i == 2): train_img_folder = '/Users/jerrykong/FilesCenter/kzr/1HKPOLYU/Projects/example/Train/Train/images_half'
+else: train_img_folder = '/Users/jerrykong/FilesCenter/kzr/1HKPOLYU/Projects/example/Train/Train/images_test'
 
 # Custom dataset for image segmentation
 class SegmentationDataset(Dataset):
