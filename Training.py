@@ -12,7 +12,7 @@ from PIL import Image
 from tqdm import tqdm
 
 CUDA_LAUNCH_BLOCKING=1
-device = torch.device('cpu')
+device = torch.device('mps')
 
 # Please modify the following paths to the correct paths on your machine!!!
 print('Welcome to the Road Lane Detection from Noisy Satellite Imag1es Program.')
@@ -311,6 +311,7 @@ def main():
             loss.backward()
             total_loss += loss.item()
             optimizer.step()
+            optimizer.zero_grad()
             progress_bar.update()
             total_ber += calculate_ber(outputs.cpu().detach().numpy(), masks.cpu().detach().numpy())
             total_mae += calculate_mae(outputs.cpu().detach().numpy(), masks.cpu().detach().numpy())
