@@ -83,7 +83,7 @@ def show_image_mask(num1, num2, num3, num4, label):
     plt.plot(num2, label='Loss')
     plt.plot(num3, label='BER')
     plt.plot(num4, label='MAE')
-    # plt.plot(num5, label='BCE')
+    # plt.plot(num5.cpu(), label='BCE')
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.subplots_adjust(right=0.8)
     plt.show()
@@ -308,8 +308,8 @@ def main():
             # plt.imshow(outputs[0].squeeze().detach().cpu(), cmap='gray')
             # plt.show()
             loss = dice_loss(outputs, masks)  # Adjust mask dimensions if necessary
+            total_loss += loss
             loss.backward()
-            total_loss += loss.item()
             optimizer.step()
             optimizer.zero_grad()
             progress_bar.update()
@@ -345,11 +345,10 @@ def main():
             arr_loss.append(total_loss/total_num)
             arr_ber.append(total_ber/total_num)
             arr_mae.append(total_mae/total_num)
-            if(arr_acc.__len__() > 1): 
-                show_image_mask(arr_acc, arr_loss, arr_ber, arr_mae, 'Multiple Line Plots')
+            #if(arr_acc.__len__() > 1):
+                #show_image_mask(arr_acc, arr_loss, arr_ber, arr_mae, 'Multiple Line Plots')
             if(epoch + 1) % 10 == 0:
                 test_model(checkpoint_path)
     print('Task completed!')
 
-if __name__ == '__main__':
-    main()
+main()
