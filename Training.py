@@ -4,14 +4,13 @@ from time import sleep
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
-import torch.nn.functional as F1
+import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms  
 from PIL import Image
 from tqdm import tqdm
 
-CUDA_LAUNCH_BLOCKING=1
 device = torch.device('mps')
 
 # Please modify the following paths to the correct paths on your machine!!!
@@ -125,6 +124,12 @@ class SimpleSegmentationModel(nn.Module):
         x = self.upsample(x)
         x = self.conv11(x)
         return x
+    
+    def training_step(self, batch):
+        images, labels = batch[0].to(device), batch[1].to(device)
+        out = self(images)             # Generate predictions
+        loss = dice_loss(out, labels) # Calculate loss
+        return loss, out, labels
 
 # Define transformations for images and masks
 transform = {
@@ -272,7 +277,7 @@ def main():
     train_data = SegmentationDataset(train_img_folder, train_gt_folder, transform=transform)
     train_loader = DataLoader(train_data, batch_size=16) # Adjust batch size
     model = SimpleSegmentationModel().to(device)
-    optimizer = optim.SGD(model.parameters(), lr=0.001)
+    optimizer = optim.SGD(model.parameters(), lr=0.1)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
 
     # Training loop
@@ -297,18 +302,10 @@ def main():
         model.train()
         progress_bar = tqdm(train_loader, unit='batch')
         progress_bar.set_description(f'Epoch [{epoch+1}/{num_epochs}]')
-        for images, masks, image_names in train_loader:
-            # plt.imshow(images[0].permute(1, 2, 0))
-            # plt.show()
-            # plt.imshow(masks[0].squeeze(), cmap='gray')
-            # plt.show()
-            images, masks = images.to(device), masks.to(device)
-            outputs = model(images)
-            # print(max(outputs[0].squeeze().detach().cpu().numpy().flatten()))
-            # plt.imshow(outputs[0].squeeze().detach().cpu(), cmap='gray')
-            # plt.show()
-            loss = dice_loss(outputs, masks)  # Adjust mask dimensions if necessary
-            total_loss += loss
+        for batch in train_loader:
+            loss, outputs, masks = model.training_step(batch)  # Adjust mask dimensions if necessary
+            # print('epoch' + str(epoch) + ':' + str(loss.item()))
+            total_loss += loss.item()
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
@@ -345,8 +342,7 @@ def main():
             arr_loss.append(total_loss/total_num)
             arr_ber.append(total_ber/total_num)
             arr_mae.append(total_mae/total_num)
-            #if(arr_acc.__len__() > 1):
-                #show_image_mask(arr_acc, arr_loss, arr_ber, arr_mae, 'Multiple Line Plots')
+            show_image_mask(arr_acc, arr_loss, arr_ber, arr_mae, 'Multiple Line Plots')
             if(epoch + 1) % 10 == 0:
                 test_model(checkpoint_path)
     print('Task completed!')
